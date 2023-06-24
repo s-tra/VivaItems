@@ -1,0 +1,15 @@
+name: VivaItems
+version: '${project.version}'
+main: online.vivaseikatsu.stra.vivaitems.VivaItems
+api-version: 1.17
+
+
+permissions:
+  vivaitems.use:
+    description: vivaitemsを使うのに必要な権限です。
+    default: true
+  vivaitems.beta:
+    description: beta機能を利用するのに必要な権限。
+    default: false
+
+
