@@ -2,6 +2,7 @@ package online.vivaseikatsu.stra.vivaitems;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.Levelled;
 import org.bukkit.block.data.Waterlogged;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -11,12 +12,14 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.CauldronLevelChangeEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 
+import javax.annotation.ParametersAreNullableByDefault;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -88,6 +91,17 @@ public class UseVivaItems implements Listener {
                 // 天気を変更ここまで
                 }
 
+
+                // 無限バケツ
+                if(s.contains("vivaitems.bucket.reuseable")) {
+
+                    // クールタイム300ms
+                    if(plg.isCooldown(p, 100, false)) break;
+                    reuseableBucket(p,e.getClickedBlock());
+
+                }
+
+
             // 説明欄の走査ここまで
             }
 
@@ -130,7 +144,6 @@ public class UseVivaItems implements Listener {
                     }
                 // テレポートここまで
                 }
-
 
 
             // 説明欄の走査ここまで
@@ -186,10 +199,21 @@ public class UseVivaItems implements Listener {
 
             }
 
+            // 遠隔ダメージ武器
+            // vivaitems.rightclick.weapon
+            if(s.contains("vivaitems.rightclick.weapon")){
+
+                // ダメージを与えられるエンティティだった場合処理を続行
+                if(e.getRightClicked() instanceof Damageable){
+                    rightClickWeapon(p,e.getRightClicked());
+                }
+            }
 
 
 
-        // 説明欄の走査ここまで
+
+
+            // 説明欄の走査ここまで
         }
 
     // PlayerInteractAtEntityここまで
@@ -513,7 +537,7 @@ public class UseVivaItems implements Listener {
                 // 無限バケツ
                 if(s.contains(".reuseable")) {
 
-                    // 大釜が対象だった場合、終了
+                    // 大釜が対象だった場合
                     if(e.getBlockClicked().getType() == Material.CAULDRON) return;
 
                     // バケツキャンセルを無効に
@@ -621,8 +645,7 @@ public class UseVivaItems implements Listener {
             // vivaitemsなアイテムを使えないようにする
             if(s.contains("vivaitems.")) e.setCancelled(true);
 
-
-            // 説明欄の走査ここまで
+        // 説明欄の走査ここまで
         }
 
 
@@ -1113,6 +1136,134 @@ public class UseVivaItems implements Listener {
 
     }
 
+    // 無限バケツ
+    private void reuseableBucket(Player p,Block b){
+
+        // 空バケツを大釜に使う場合
+        if(p.getInventory().getItemInMainHand().getType() == Material.BUCKET){
+            if(b.getType() == Material.WATER_CAULDRON
+                    || b.getType() == Material.LAVA_CAULDRON
+                    || b.getType() == Material.POWDER_SNOW_CAULDRON) {
+
+                // 効果音を鳴らす
+                World w = p.getWorld();
+
+                Location soundLocation = b.getLocation().clone();
+                soundLocation.setX(soundLocation.getX() + 0.5);
+                soundLocation.setY(soundLocation.getY() + 0.5);
+                soundLocation.setZ(soundLocation.getZ() + 0.5);
+
+                if(b.getType() == Material.WATER_CAULDRON) w.playSound(soundLocation, Sound.ITEM_BUCKET_FILL, 100, 1);
+                if(b.getType() == Material.LAVA_CAULDRON) w.playSound(soundLocation, Sound.ITEM_BUCKET_FILL_LAVA, 100, 1);
+                if(b.getType() == Material.POWDER_SNOW_CAULDRON) w.playSound(soundLocation, Sound.ITEM_BUCKET_FILL_POWDER_SNOW, 100, 1);
+
+                // 空の大釜に置き換え
+                b.setType(Material.CAULDRON);
+
+                return;
+            }
+        }
+
+        // 水バケツを大釜に使う場合
+        if(p.getInventory().getItemInMainHand().getType() == Material.WATER_BUCKET) {
+            if (b.getType() == Material.CAULDRON
+                    || b.getType() == Material.WATER_CAULDRON) {
+
+                // 空の大釜をWATER_CAULDRONに置き換え
+                if (b.getType() == Material.CAULDRON) {
+                    b.setType(Material.WATER_CAULDRON);
+                }
+
+                // ブロックデータの取得
+                Levelled cauldron = (Levelled) b.getBlockData();
+                // ブロックのレベルを最大値にセット
+                cauldron.setLevel(cauldron.getMaximumLevel());
+                // ブロックデータの反映
+                b.setBlockData(cauldron);
+
+                // 効果音を鳴らす
+                Location soundLocation = b.getLocation().clone();
+                soundLocation.setX(soundLocation.getX() + 0.5);
+                soundLocation.setY(soundLocation.getY() + 0.5);
+                soundLocation.setZ(soundLocation.getZ() + 0.5);
+                p.getWorld().playSound(soundLocation, Sound.ITEM_BUCKET_EMPTY, 100, 1);
+
+                return;
+            }
+        }
+
+        // 溶岩バケツを大釜に使う場合
+        if(p.getInventory().getItemInMainHand().getType() == Material.LAVA_BUCKET) {
+            if (b.getType() == Material.CAULDRON
+                    || b.getType() == Material.LAVA_CAULDRON) {
+
+                // 空の大釜をLAVA_CAULDRONに置き換え
+                if (b.getType() == Material.CAULDRON) {
+                    b.setType(Material.LAVA_CAULDRON);
+                }
+
+                // 効果音を鳴らす
+                Location soundLocation = b.getLocation().clone();
+                soundLocation.setX(soundLocation.getX() + 0.5);
+                soundLocation.setY(soundLocation.getY() + 0.5);
+                soundLocation.setZ(soundLocation.getZ() + 0.5);
+                p.getWorld().playSound(soundLocation, Sound.ITEM_BUCKET_EMPTY_LAVA, 100, 1);
+
+                return;
+            }
+        }
+
+        // 粉雪バケツを大釜に使う場合
+        if(p.getInventory().getItemInMainHand().getType() == Material.POWDER_SNOW_BUCKET) {
+            if (b.getType() == Material.CAULDRON
+                    || b.getType() == Material.POWDER_SNOW_CAULDRON) {
+
+                // 空の大釜をPOWDER_SNOW_CAULDRONに置き換え
+                if (b.getType() == Material.CAULDRON) {
+                    b.setType(Material.POWDER_SNOW_CAULDRON);
+                }
+
+                // ブロックデータの取得
+                Levelled cauldron = (Levelled) b.getBlockData();
+                // ブロックのレベルを最大値にセット
+                cauldron.setLevel(cauldron.getMaximumLevel());
+                // ブロックデータの反映
+                b.setBlockData(cauldron);
+
+                // 効果音を鳴らす
+                Location soundLocation = b.getLocation().clone();
+                soundLocation.setX(soundLocation.getX() + 0.5);
+                soundLocation.setY(soundLocation.getY() + 0.5);
+                soundLocation.setZ(soundLocation.getZ() + 0.5);
+                p.getWorld().playSound(soundLocation, Sound.ITEM_BUCKET_EMPTY_POWDER_SNOW, 100, 1);
+
+                return;
+            }
+        }
+
+
+    }
+
+    // 右クリック武器
+    private void rightClickWeapon(Player p,Entity e){
+
+        // クールタイム200ms
+        if(plg.isCooldown(p, 200, false)) return;
+
+        Damageable d = (Damageable) e;
+        World w = e.getWorld();
+
+        // 対象の体力を0に
+        d.setHealth(0);
+
+        // ダメージを与える演出
+        w.playSound(e.getLocation(),Sound.BLOCK_ENCHANTMENT_TABLE_USE,50,-1);
+        w.spawnParticle(Particle.SOUL,e.getLocation(),10,1,1,1,0.1);
+        w.spawnParticle(Particle.SOUL_FIRE_FLAME,e.getLocation(),10,1,1,1,0.1);
+
+
+
+    }
 
 
 
