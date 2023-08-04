@@ -12,6 +12,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.CauldronLevelChangeEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.PlayerLeashEntityEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
@@ -20,6 +21,7 @@ import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 
 import javax.annotation.ParametersAreNullableByDefault;
+import javax.lang.model.element.VariableElement;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -207,6 +209,19 @@ public class UseVivaItems implements Listener {
                 if(e.getRightClicked() instanceof Damageable){
                     rightClickWeapon(p,e.getRightClicked());
                 }
+            }
+
+            // モブおんぶひも
+            // vivaitems.rightclick.mobstrap
+            if(s.contains("vivaitems.rightclick.mobstrap")){
+
+                // ダメージを与えられるエンティティだった場合処理を続行
+                if(e.getRightClicked() instanceof Damageable){
+                    // クールタイム1000ms
+                    if(plg.isCooldown(p, 1000, false)) break;
+                    mobStrap(p,e.getRightClicked());
+                }
+
             }
 
 
@@ -706,6 +721,7 @@ public class UseVivaItems implements Listener {
 
     // PlayerMoveEventここまで
     }
+
 
 
     // ==== 以下、個々のアイテムの処理たち ====
@@ -1260,6 +1276,42 @@ public class UseVivaItems implements Listener {
         w.playSound(e.getLocation(),Sound.BLOCK_ENCHANTMENT_TABLE_USE,50,-1);
         w.spawnParticle(Particle.SOUL,e.getLocation(),10,1,1,1,0.1);
         w.spawnParticle(Particle.SOUL_FIRE_FLAME,e.getLocation(),10,1,1,1,0.1);
+
+
+
+    }
+
+    // モブおんぶひも
+    private void mobStrap(Player player,Entity entity){
+
+        // 頭上になにかいるかどうか
+        if(player.isEmpty()){
+
+            //　エンティティを乗せる
+            player.addPassenger(entity);
+            //　サウンドを再生
+            player.getWorld().playSound(player.getLocation(),Sound.ITEM_ARMOR_EQUIP_LEATHER,1,0);
+
+        }else{
+
+            // Passengersを順番に下ろす
+            for(Entity e:player.getPassengers()){
+
+                // Entityを下ろす
+                player.removePassenger(e);
+
+                // プレイヤーの見てる方向を取得
+                Vector vec = player.getLocation().getDirection();
+                // 数値を処理
+                vec.normalize().multiply(0.3);
+
+                // エンティティに速度を付与
+                e.setVelocity(vec);
+                // サウンドを再生
+                player.getWorld().playSound(player.getLocation(),Sound.ENTITY_ARROW_SHOOT,1,-5);
+            }
+
+        }
 
 
 
