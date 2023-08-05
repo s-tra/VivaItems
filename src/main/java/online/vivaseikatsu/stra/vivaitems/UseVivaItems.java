@@ -215,6 +215,9 @@ public class UseVivaItems implements Listener {
             // vivaitems.rightclick.mobstrap
             if(s.contains("vivaitems.rightclick.mobstrap")){
 
+                // 対象がプレイヤーだった場合は終了
+                if(e.getRightClicked().getType() == EntityType.PLAYER) break;
+
                 // ダメージを与えられるエンティティだった場合処理を続行
                 if(e.getRightClicked() instanceof Damageable){
                     // クールタイム1000ms
