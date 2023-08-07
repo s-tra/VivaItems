@@ -12,16 +12,13 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.CauldronLevelChangeEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.entity.PlayerLeashEntityEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 
-import javax.annotation.ParametersAreNullableByDefault;
-import javax.lang.model.element.VariableElement;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -44,6 +41,14 @@ public class UseVivaItems implements Listener {
         Player p = e.getPlayer();
         // 権限がない場合なにもせず終了
         if(!p.hasPermission("vivaitems.use")) return;
+
+        // Mobを下ろすときの処理
+        if(!p.getPassengers().isEmpty()){
+            if(p.isSneaking()){
+                mobStrap(p,null);
+            }
+        }
+
         // 手に持ってるアイテムを取得
         ItemStack i = e.getPlayer().getInventory().getItemInMainHand();
 
@@ -100,6 +105,7 @@ public class UseVivaItems implements Listener {
                     // クールタイム300ms
                     if(plg.isCooldown(p, 100, false)) break;
                     reuseableBucket(p,e.getClickedBlock());
+                    break;
 
                 }
 
@@ -144,8 +150,10 @@ public class UseVivaItems implements Listener {
                             plg.DecreaseMainHandItem(p, 1);
                         }
                     }
+                    break;
                 // テレポートここまで
                 }
+
 
 
             // 説明欄の走査ここまで
@@ -165,6 +173,13 @@ public class UseVivaItems implements Listener {
         Player p = e.getPlayer();
         // 権限がない場合なにもせず終了
         if(!p.hasPermission("vivaitems.use")) return;
+
+        // Mobを下ろすときの処理
+        if(!p.getPassengers().isEmpty()){
+            if(p.isSneaking()){
+                mobStrap(p,null);
+            }
+        }
 
         // 手に持ってるアイテムを取得
         ItemStack i = e.getPlayer().getInventory().getItemInMainHand();
@@ -220,6 +235,7 @@ public class UseVivaItems implements Listener {
 
                 // ダメージを与えられるエンティティだった場合処理を続行
                 if(e.getRightClicked() instanceof Damageable){
+                    e.setCancelled(true);
                     // クールタイム1000ms
                     if(plg.isCooldown(p, 1000, false)) break;
                     mobStrap(p,e.getRightClicked());
@@ -396,6 +412,16 @@ public class UseVivaItems implements Listener {
         // 権限がない場合終了
         if(!p.hasPermission("vivaitems.use")) return;
 
+        // Mobを下ろすときの処理
+        if(e.getDamager().getType() == EntityType.PLAYER){
+            if(!p.getPassengers().isEmpty()){
+                if(p.isSneaking()){
+                    if(mobStrap(p,null)) e.setCancelled(true);
+                }
+            }
+        }
+
+
         // インベントリ内全スロットを走査
         for(ItemStack i : p.getInventory().getContents()){
             // 説明欄の取得ができない場合、終了
@@ -504,6 +530,7 @@ public class UseVivaItems implements Listener {
 
 
     }
+
 
     // playerがバケツでmobを掬うとき
     @EventHandler
@@ -1285,20 +1312,30 @@ public class UseVivaItems implements Listener {
     }
 
     // モブおんぶひも
-    private void mobStrap(Player player,Entity entity){
+    private boolean mobStrap(Player player,@Nullable Entity entity){
 
         // 頭上になにかいるかどうか
         if(player.isEmpty()){
 
+            // 乗せるエンティティがnullの場合
+            if(entity == null) return false;
             //　エンティティを乗せる
             player.addPassenger(entity);
             //　サウンドを再生
             player.getWorld().playSound(player.getLocation(),Sound.ITEM_ARMOR_EQUIP_LEATHER,1,0);
+            // 下ろし方を知らせる
+            plg.sendActionBar(player,"Shift + クリック でMOBを下ろす");
 
         }else{
 
-            // Passengersを順番に下ろす
+            // スニーク中のみ処理を続行
+            if(!player.isSneaking()) return false;
+
+                // Passengersを順番に下ろす
             for(Entity e:player.getPassengers()){
+
+                // プレイヤーの場合はとばす(他プラグインとの競合回避)
+                if(e.getType() == EntityType.PLAYER) continue;
 
                 // Entityを下ろす
                 player.removePassenger(e);
@@ -1316,7 +1353,7 @@ public class UseVivaItems implements Listener {
 
         }
 
-
+        return true;
 
     }
 

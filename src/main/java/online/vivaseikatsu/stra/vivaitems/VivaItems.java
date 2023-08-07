@@ -1,5 +1,7 @@
 package online.vivaseikatsu.stra.vivaitems;
 
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -324,6 +326,11 @@ public final class VivaItems extends JavaPlugin {
         return false;
 
         // クールダウン用の処理ここまで
+    }
+
+    // ActionBarにテキストを表示させる処理
+    public void sendActionBar(Player player, String message) {
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
     }
 
 
