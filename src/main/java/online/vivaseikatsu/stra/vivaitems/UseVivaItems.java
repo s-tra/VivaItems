@@ -181,74 +181,104 @@ public class UseVivaItems implements Listener {
             }
         }
 
+
+        // プレイヤーのヘルメットを取得
+        if(p.getInventory().getHelmet() != null){
+            ItemStack helmet = p.getInventory().getHelmet();
+            // 説明欄がある場合のみ続行
+            if(helmet.getItemMeta() != null
+                && helmet.getItemMeta().getLore() != null){
+
+                for(String s : helmet.getItemMeta().getLore()){
+
+                    if(s.contains("vivaitems.helmet.passenger")){
+                        // 対象がプレイヤーだった場合は終了
+                        if(e.getRightClicked().getType() == EntityType.PLAYER) break;
+
+                        // ダメージを与えられるエンティティだった場合処理を続行
+                        if(e.getRightClicked() instanceof Damageable){
+                            e.setCancelled(true);
+                            mobStrap(p,e.getRightClicked());
+                        }
+                    }
+
+                }
+
+            }
+        // ヘルメット参照ここまで
+        }
+
+
+
         // 手に持ってるアイテムを取得
         ItemStack i = e.getPlayer().getInventory().getItemInMainHand();
+        // 説明欄がある場合のみ続行
+        if(i.getItemMeta() != null
+            && i.getItemMeta().getLore() != null){
 
+            // itemの説明欄の文字列を走査
+            for(String s : i.getItemMeta().getLore()){
 
-        // 手に持ってるアイテムに説明がない場合なにもせず終了
-        if(i.getItemMeta() == null) return;
-        if(i.getItemMeta().getLore() == null ) return;
-
-        // itemの説明欄の文字列を走査
-        for(String s : i.getItemMeta().getLore()){
-
-            // テスト
-            // vivaitems.rightclick.test
-            if(s.contains("vivaitems.mob_rightclick.test")){
-                // playerがスニークじゃない場合はなにもせず終了
-                if(!p.isSneaking()) return;
-                p.sendMessage("[VivaItems]右クリックを検知");
-                // スニークを解除
-                p.setSneaking(false);
-                break;
-            }
-
-            // アーマースタンド用ツールたち
-            // vivaitems.rightclick.armor_stand.*
-            if(s.contains("vivaitems.rightclick.armor_stand.")){
-                // クリックしたエンティティを取得
-                // ArmorStandにinstanceできないときは終了
-                if(!(e.getRightClicked() instanceof ArmorStand)) return;
-                // アーマースタンドを取得
-                ArmorStand armorStand = (ArmorStand) e.getRightClicked();
-                // アーマースタンド用ツールの処理を実行
-                ArmorStandTools(p,s,armorStand);
-
-            }
-
-            // 遠隔ダメージ武器
-            // vivaitems.rightclick.weapon
-            if(s.contains("vivaitems.rightclick.weapon")){
-
-                // ダメージを与えられるエンティティだった場合処理を続行
-                if(e.getRightClicked() instanceof Damageable){
-                    rightClickWeapon(p,e.getRightClicked());
-                }
-            }
-
-            // モブおんぶひも
-            // vivaitems.rightclick.mobstrap
-            if(s.contains("vivaitems.rightclick.mobstrap")){
-
-                // 対象がプレイヤーだった場合は終了
-                if(e.getRightClicked().getType() == EntityType.PLAYER) break;
-
-                // ダメージを与えられるエンティティだった場合処理を続行
-                if(e.getRightClicked() instanceof Damageable){
-                    e.setCancelled(true);
-                    // クールタイム1000ms
-                    if(plg.isCooldown(p, 1000, false)) break;
-                    mobStrap(p,e.getRightClicked());
+                // テスト
+                // vivaitems.rightclick.test
+                if(s.contains("vivaitems.mob_rightclick.test")){
+                    // playerがスニークじゃない場合はなにもせず終了
+                    if(!p.isSneaking()) break;
+                    p.sendMessage("[VivaItems]右クリックを検知");
+                    // スニークを解除
+                    p.setSneaking(false);
+                    break;
                 }
 
+                // アーマースタンド用ツールたち
+                // vivaitems.rightclick.armor_stand.*
+                if(s.contains("vivaitems.rightclick.armor_stand.")){
+                    // クリックしたエンティティを取得
+                    // ArmorStandにinstanceできないときは終了
+                    if(!(e.getRightClicked() instanceof ArmorStand)) break;
+                    // アーマースタンドを取得
+                    ArmorStand armorStand = (ArmorStand) e.getRightClicked();
+                    // アーマースタンド用ツールの処理を実行
+                    ArmorStandTools(p,s,armorStand);
+
+                }
+
+                // 遠隔ダメージ武器
+                // vivaitems.rightclick.weapon
+                if(s.contains("vivaitems.rightclick.weapon")){
+
+                    // ダメージを与えられるエンティティだった場合処理を続行
+                    if(e.getRightClicked() instanceof Damageable){
+                        rightClickWeapon(p,e.getRightClicked());
+                    }
+                }
+
+                // モブおんぶひも
+                // vivaitems.rightclick.mobstrap
+                if(s.contains("vivaitems.rightclick.mobstrap")){
+
+                    // 対象がプレイヤーだった場合は終了
+                    if(e.getRightClicked().getType() == EntityType.PLAYER) break;
+
+                    // ダメージを与えられるエンティティだった場合処理を続行
+                    if(e.getRightClicked() instanceof Damageable){
+                        e.setCancelled(true);
+                        mobStrap(p,e.getRightClicked());
+                    }
+
+                }
+
+
+
+
+
+                // 説明欄の走査ここまで
             }
 
-
-
-
-
-            // 説明欄の走査ここまで
         }
+
+
+
 
     // PlayerInteractAtEntityここまで
     }
@@ -404,8 +434,8 @@ public class UseVivaItems implements Listener {
 
         // Playerが絡む場合、プレイヤーを取得
         Player p = null;
-        if(e.getDamager().getType().equals(EntityType.PLAYER)) p = (Player) e.getDamager();
-        if(e.getEntity().getType().equals(EntityType.PLAYER)) p = (Player) e.getEntity();
+        if(e.getDamager().getType() == EntityType.PLAYER) p = (Player) e.getDamager();
+        if(e.getEntity().getType() == EntityType.PLAYER) p = (Player) e.getEntity();
 
         // Playerがnullなら終了
         if(p == null)return;
@@ -413,13 +443,16 @@ public class UseVivaItems implements Listener {
         if(!p.hasPermission("vivaitems.use")) return;
 
         // Mobを下ろすときの処理
-        if(e.getDamager().getType() == EntityType.PLAYER){
-            if(!p.getPassengers().isEmpty()){
-                if(p.isSneaking()){
-                    if(mobStrap(p,null)) e.setCancelled(true);
-                }
-            }
+        // 攻撃者がプレイヤーで、パッセンジャーを乗せているとき
+        if(e.getDamager().getType() == EntityType.PLAYER
+            && !e.getDamager().getPassengers().isEmpty()){
+
+            if(e.getEntity().getVehicle() == e.getDamager()) e.setCancelled(true);
+
+            if(p.isSneaking()) mobStrap(p,null);
+
         }
+
 
 
         // インベントリ内全スロットを走査
@@ -1312,13 +1345,16 @@ public class UseVivaItems implements Listener {
     }
 
     // モブおんぶひも
-    private boolean mobStrap(Player player,@Nullable Entity entity){
+    private void mobStrap(Player player, @Nullable Entity entity){
 
-        // 頭上になにかいるかどうか
+        // クールダウン500ms
+        if(plg.isCooldown(player, 500, false)) return;
+
+            // 頭上になにかいるかどうか
         if(player.isEmpty()){
 
             // 乗せるエンティティがnullの場合
-            if(entity == null) return false;
+            if(entity == null) return;
             //　エンティティを乗せる
             player.addPassenger(entity);
             //　サウンドを再生
@@ -1329,7 +1365,7 @@ public class UseVivaItems implements Listener {
         }else{
 
             // スニーク中のみ処理を続行
-            if(!player.isSneaking()) return false;
+            if(!player.isSneaking()) return;
 
                 // Passengersを順番に下ろす
             for(Entity e:player.getPassengers()){
@@ -1352,8 +1388,6 @@ public class UseVivaItems implements Listener {
             }
 
         }
-
-        return true;
 
     }
 
