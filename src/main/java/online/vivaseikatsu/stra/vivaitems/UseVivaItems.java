@@ -16,6 +16,7 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.EulerAngle;
+import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nullable;
@@ -140,6 +141,7 @@ public class UseVivaItems implements Listener {
                     break;
                 }
 
+
                 // 見てるブロックまでテレポート
                 // vivaitems.rightclick.teleport.see_block
                 if(s.contains("vivaitems.rightclick.teleport.see_block")){
@@ -152,6 +154,12 @@ public class UseVivaItems implements Listener {
                     }
                     break;
                 // テレポートここまで
+                }
+
+                // 遠隔ダメージ武器
+                // vivaitems.rightclick.weapon
+                if(s.contains("vivaitems.rightclick.weapon")){
+                    rightClickWeapon(p,null);
                 }
 
 
@@ -194,6 +202,8 @@ public class UseVivaItems implements Listener {
                     if(s.contains("vivaitems.helmet.passenger")){
                         // 対象がプレイヤーだった場合は終了
                         if(e.getRightClicked().getType() == EntityType.PLAYER) break;
+                        // 対象が防具立ての場合は終了
+                        if(e.getRightClicked().getType() == EntityType.ARMOR_STAND) break;
 
                         // ダメージを与えられるエンティティだった場合処理を続行
                         if(e.getRightClicked() instanceof Damageable){
@@ -246,11 +256,7 @@ public class UseVivaItems implements Listener {
                 // 遠隔ダメージ武器
                 // vivaitems.rightclick.weapon
                 if(s.contains("vivaitems.rightclick.weapon")){
-
-                    // ダメージを与えられるエンティティだった場合処理を続行
-                    if(e.getRightClicked() instanceof Damageable){
-                        rightClickWeapon(p,e.getRightClicked());
-                    }
+                    rightClickWeapon(p,e.getRightClicked());
                 }
 
                 // モブおんぶひも
@@ -259,6 +265,8 @@ public class UseVivaItems implements Listener {
 
                     // 対象がプレイヤーだった場合は終了
                     if(e.getRightClicked().getType() == EntityType.PLAYER) break;
+                    // 対象が防具立ての場合は終了
+                    if(e.getRightClicked().getType() == EntityType.ARMOR_STAND) break;
 
                     // ダメージを与えられるエンティティだった場合処理を続行
                     if(e.getRightClicked() instanceof Damageable){
@@ -1324,10 +1332,40 @@ public class UseVivaItems implements Listener {
     }
 
     // 右クリック武器
-    private void rightClickWeapon(Player p,Entity e){
+    private void rightClickWeapon(Player p,@Nullable Entity e){
+
+        // オペレーターのみ許可
+        if(!p.isOp()) return;
 
         // クールタイム200ms
-        if(plg.isCooldown(p, 200, false)) return;
+        if(plg.isCooldown(p, 200, true)) return;
+
+        if(e == null){
+
+            if(p.getGameMode() == GameMode.SPECTATOR) return;
+
+            // playerの視線をなぞって、ぶつかったエンティティを探す
+            RayTraceResult rayTraceResult = p.getWorld().rayTraceEntities(
+                    p.getEyeLocation().add(p.getLocation().getDirection()),
+                    p.getEyeLocation().getDirection(),
+                    30,
+                    entity -> !entity.getUniqueId().equals(p.getUniqueId()));
+
+            // トレース結果がnullなら終了
+            if(rayTraceResult == null) {
+                p.sendMessage(ChatColor.GRAY+"[debug] Trace結果はnullです。");
+                return;
+            }
+
+            // トレース結果からエンティティを取得
+            e = rayTraceResult.getHitEntity();
+
+        }
+
+        p.sendMessage(ChatColor.GRAY+"[debug] 対象："+e.getType());
+
+        // ダメージを与えられるエンティティの場合のみ続行
+        if(!(e instanceof Damageable)) return;
 
         Damageable d = (Damageable) e;
         World w = e.getWorld();
@@ -1344,7 +1382,7 @@ public class UseVivaItems implements Listener {
 
     }
 
-    // モブおんぶひも
+    // モブストラップ
     private void mobStrap(Player player, @Nullable Entity entity){
 
         // クールダウン500ms

@@ -6,7 +6,7 @@
 
     <groupId>online.viva-seikatsu.s-tra</groupId>
     <artifactId>VivaItems</artifactId>
-    <version>0.17.c</version>
+    <version>0.17.d</version>
     <packaging>jar</packaging>
 
     <name>VivaItems</name>
