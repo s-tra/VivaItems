@@ -176,6 +176,54 @@ public class UseVivaItems implements Listener {
 
     // エンティティに対して右クリックした時
     @EventHandler
+    public void onPlayerInteractEntityEvent(PlayerInteractEntityEvent e){
+        // プレイヤーの取得
+        Player p = e.getPlayer();
+        // 権限がない場合なにもせず終了
+        if(!p.hasPermission("vivaitems.use")) return;
+
+        // Mobを下ろすときの処理
+        if(!p.getPassengers().isEmpty()){
+            if(p.isSneaking()){
+                mobStrap(p,null);
+            }
+        }
+
+        // 手に持ってるアイテムを取得
+        ItemStack i = e.getPlayer().getInventory().getItemInMainHand();
+        // 説明欄がある場合のみ続行
+        if(i.getItemMeta() != null
+                && i.getItemMeta().getLore() != null){
+
+            // itemの説明欄の文字列を走査
+            for(String s : i.getItemMeta().getLore()){
+
+                // テスト
+                // vivaitems.rightclick.test
+                if(s.contains("vivaitems.mob_rightclick.test")){
+                    // playerがスニークじゃない場合はなにもせず終了
+                    if(!p.isSneaking()) break;
+                    p.sendMessage("[VivaItems]右クリックを検知");
+                    // スニークを解除
+                    p.setSneaking(false);
+                    break;
+                }
+
+                // vivaitemsを使えないようにする動作
+                if(s.contains("vivaitems.")) {
+                    e.setCancelled(true);
+                }
+
+                // 説明欄の走査ここまで
+            }
+
+        }
+
+    }
+
+
+
+    @EventHandler
     public void onPlayerInteractAtEntityEvent(PlayerInteractAtEntityEvent e){
         // プレイヤーの取得
         Player p = e.getPlayer();
@@ -238,6 +286,11 @@ public class UseVivaItems implements Listener {
                     // スニークを解除
                     p.setSneaking(false);
                     break;
+                }
+
+                // vivaitemsを使えないようにする動作
+                if(s.contains("vivaitems.")) {
+                    e.setCancelled(true);
                 }
 
                 // アーマースタンド用ツールたち

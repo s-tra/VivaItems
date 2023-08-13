@@ -132,6 +132,11 @@ public final class VivaItems extends JavaPlugin {
         if(lore.contains(".2")) amp = 2;
         if(lore.contains(".3")) amp = 3;
         if(lore.contains(".4")) amp = 4;
+        if(lore.contains(".5")) amp = 5;
+        if(lore.contains(".6")) amp = 6;
+        if(lore.contains(".7")) amp = 7;
+        if(lore.contains(".8")) amp = 8;
+        if(lore.contains(".9")) amp = 9;
 
         // effectnameがnullじゃない時は実際に効果付与
         if(!(effectname == null)){
