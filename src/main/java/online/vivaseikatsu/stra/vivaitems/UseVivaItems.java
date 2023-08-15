@@ -1462,6 +1462,17 @@ public class UseVivaItems implements Listener {
 
             // 乗せるエンティティがnullの場合
             if(entity == null) return;
+
+            // 乗せるエンティティが就職済み村人の場合
+            if(entity instanceof Villager){
+                Villager villager = (Villager) entity;
+                if(!(villager.getProfession() == Villager.Profession.NONE)){
+                    // 頭を振って乗車拒否
+                    villager.shakeHead();
+                    return;
+                }
+            }
+
             //　エンティティを乗せる
             player.addPassenger(entity);
             //　サウンドを再生
