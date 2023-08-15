@@ -191,6 +191,35 @@ public class UseVivaItems implements Listener {
             }
         }
 
+        // プレイヤーのヘルメットを取得
+        if(p.getInventory().getHelmet() != null){
+            ItemStack helmet = p.getInventory().getHelmet();
+            // 説明欄がある場合のみ続行
+            if(helmet.getItemMeta() != null
+                    && helmet.getItemMeta().getLore() != null){
+
+                for(String s : helmet.getItemMeta().getLore()){
+
+                    if(s.contains("vivaitems.helmet.passenger")){
+                        // 対象がプレイヤーだった場合は終了
+                        if(e.getRightClicked().getType() == EntityType.PLAYER) break;
+                        // 対象が防具立ての場合は終了
+                        if(e.getRightClicked().getType() == EntityType.ARMOR_STAND) break;
+
+                        // ダメージを与えられるエンティティだった場合処理を続行
+                        if(e.getRightClicked() instanceof Damageable){
+                            e.setCancelled(true);
+                            // PlayerInteractAtEntityEventの方で処理
+                            // mobStrap(p,e.getRightClicked());
+                        }
+                    }
+
+                }
+
+            }
+            // ヘルメット参照ここまで
+        }
+
         // 手に持ってるアイテムを取得
         ItemStack i = e.getPlayer().getInventory().getItemInMainHand();
         // 説明欄がある場合のみ続行
