@@ -15,6 +15,8 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
@@ -222,7 +224,7 @@ public class UseVivaItems implements Listener {
     }
 
 
-
+    // エンティティに対して右クリックした時(At)
     @EventHandler
     public void onPlayerInteractAtEntityEvent(PlayerInteractAtEntityEvent e){
         // プレイヤーの取得
@@ -560,6 +562,20 @@ public class UseVivaItems implements Listener {
                 if(e.getDamager().getType().equals(EntityType.PLAYER)){
                     punchExperience(e.getEntity());
                 }
+            }
+
+            // モブ押し出し
+            // vivaitems.punch.mobpusher
+            if(s.contains("vivaitems.punch.mobpusher")){
+
+                // プレイヤーがDamageableなMOBをパンチしたとき
+                if(e.getDamager().getType() == EntityType.PLAYER
+                        && e.getEntity() instanceof Damageable){
+
+                    e.setCancelled(true);
+                    mobPusher(p,e.getEntity());
+                }
+
             }
 
 
@@ -1479,6 +1495,40 @@ public class UseVivaItems implements Listener {
             }
 
         }
+
+    }
+
+    // モブ押し出し
+    private void mobPusher(Player player, Entity entity){
+
+        // クールダウン500ms
+        if(plg.isCooldown(player, 200, false)) return;
+
+        // プレイヤー、防具立てにはなにもしない
+        if(entity.getType() == EntityType.PLAYER
+                || entity.getType() == EntityType.ARMOR_STAND) return;
+
+        // プレイヤーの見てる方向を取得
+        Vector vec = player.getLocation().getDirection();
+        // 数値を処理
+        vec.normalize().multiply(2);
+
+        //　サウンドを再生
+        player.getWorld().playSound(player.getLocation(),Sound.ENTITY_PLAYER_ATTACK_SWEEP,1,0);
+        plg.spawnParticleByLore(".crit",entity.getLocation(),20,0.5,1,0.5,0);
+
+        // エンティティに速度を付与
+        entity.setVelocity(vec.add( new Vector(0,1,0)));
+
+        // エンティティにポーション効果を付与（ダメージコントロール）
+        ((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.HEAL,80,20,false,false));
+        ((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,80,20,false,false));
+        ((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION,80,20,false,false));
+        ((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE,80,20,false,false));
+
+
+
+
 
     }
 
