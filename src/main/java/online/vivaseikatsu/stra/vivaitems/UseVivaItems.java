@@ -1498,6 +1498,7 @@ public class UseVivaItems implements Listener {
                 if(!(villager.getProfession() == Villager.Profession.NONE)){
                     // 頭を振って乗車拒否
                     villager.shakeHead();
+                    plg.sendActionBar(player,"就職した村人は持てません！");
                     return;
                 }
             }
