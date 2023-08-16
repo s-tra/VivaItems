@@ -76,6 +76,12 @@ public class RuntaskVivaItems extends BukkitRunnable {
                         plg.spawnParticleByLore(s,l_1,3,0.5,1,0.5,0.01);
                     }
 
+                    // 矢まみれになれる装備
+                    // vivaitems.armor.arrows
+                    if(s.contains("vivaitems.armor.arrows")){
+                        p.setArrowsInBody(15);
+                    }
+
 
                 }
             // 説明欄の走査ここまで

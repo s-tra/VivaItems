@@ -206,8 +206,8 @@ public class UseVivaItems implements Listener {
                         // 対象が防具立ての場合は終了
                         if(e.getRightClicked().getType() == EntityType.ARMOR_STAND) break;
 
-                        // ダメージを与えられるエンティティだった場合処理を続行
-                        if(e.getRightClicked() instanceof Damageable){
+                        // LivingEntityだった場合処理を続行
+                        if(e.getRightClicked() instanceof LivingEntity){
                             e.setCancelled(true);
                             // PlayerInteractAtEntityEventの方で処理
                             // mobStrap(p,e.getRightClicked());
@@ -284,8 +284,8 @@ public class UseVivaItems implements Listener {
                         // 対象が防具立ての場合は終了
                         if(e.getRightClicked().getType() == EntityType.ARMOR_STAND) break;
 
-                        // ダメージを与えられるエンティティだった場合処理を続行
-                        if(e.getRightClicked() instanceof Damageable){
+                        // LivingEntityだった場合処理を続行
+                        if(e.getRightClicked() instanceof LivingEntity){
                             e.setCancelled(true);
                             mobStrap(p,e.getRightClicked());
                         }
@@ -352,8 +352,8 @@ public class UseVivaItems implements Listener {
                     // 対象が防具立ての場合は終了
                     if(e.getRightClicked().getType() == EntityType.ARMOR_STAND) break;
 
-                    // ダメージを与えられるエンティティだった場合処理を続行
-                    if(e.getRightClicked() instanceof Damageable){
+                    // LivingEntityだった場合処理を続行
+                    if(e.getRightClicked() instanceof LivingEntity){
                         e.setCancelled(true);
                         mobStrap(p,e.getRightClicked());
                     }
@@ -597,12 +597,12 @@ public class UseVivaItems implements Listener {
             // vivaitems.punch.mobpusher
             if(s.contains("vivaitems.punch.mobpusher")){
 
-                // プレイヤーがDamageableなMOBをパンチしたとき
+                // プレイヤーがLivingEntityをパンチしたとき
                 if(e.getDamager().getType() == EntityType.PLAYER
-                        && e.getEntity() instanceof Damageable){
+                        && e.getEntity() instanceof LivingEntity){
 
                     e.setCancelled(true);
-                    mobPusher(p,e.getEntity());
+                    mobPusher(p,(LivingEntity) e.getEntity());
                 }
 
             }
@@ -1484,7 +1484,7 @@ public class UseVivaItems implements Listener {
     private void mobStrap(Player player, @Nullable Entity entity){
 
         // クールダウン500ms
-        if(plg.isCooldown(player, 500, false)) return;
+        if(plg.isCooldown(player, 200, false)) return;
 
             // 頭上になにかいるかどうか
         if(player.isEmpty()){
@@ -1540,7 +1540,7 @@ public class UseVivaItems implements Listener {
     }
 
     // モブ押し出し
-    private void mobPusher(Player player, Entity entity){
+    private void mobPusher(Player player, LivingEntity entity){
 
         // クールダウン500ms
         if(plg.isCooldown(player, 200, false)) return;
@@ -1552,20 +1552,21 @@ public class UseVivaItems implements Listener {
         // プレイヤーの見てる方向を取得
         Vector vec = player.getLocation().getDirection();
         // 数値を処理
-        vec.normalize().multiply(2);
+        vec.normalize().multiply(1);
 
         //　サウンドを再生
-        player.getWorld().playSound(player.getLocation(),Sound.ENTITY_PLAYER_ATTACK_SWEEP,1,0);
+        player.getWorld().playSound(player.getLocation(),Sound.ENTITY_PLAYER_ATTACK_KNOCKBACK,1,1);
         plg.spawnParticleByLore(".crit",entity.getLocation(),20,0.5,1,0.5,0);
 
         // エンティティに速度を付与
-        entity.setVelocity(vec.add( new Vector(0,1,0)));
+        entity.setVelocity(vec.add( new Vector(0,0.65,0)));
 
         // エンティティにポーション効果を付与（ダメージコントロール）
-        ((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.HEAL,80,20,false,false));
-        ((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,80,20,false,false));
-        ((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION,80,20,false,false));
-        ((LivingEntity) entity).addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE,80,20,false,false));
+        entity.addPotionEffect(new PotionEffect(PotionEffectType.HEAL,80,20,false,false));
+        entity.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION,80,20,false,false));
+        entity.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION,80,20,false,false));
+        entity.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE,80,20,false,false));
+        entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW,80,20,false,false));
 
 
 
