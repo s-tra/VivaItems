@@ -1,6 +1,7 @@
 package online.vivaseikatsu.stra.vivaitems;
 
 
+import org.apache.commons.lang.ObjectUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -179,6 +180,11 @@ public class RuntaskVivaItems extends BukkitRunnable {
         for(Entity e : player.getNearbyEntities((double) radius,(double)radius,(double)radius)){
             // 生きているファントムにのみ処理を実行
             if(e.getType() == EntityType.PHANTOM){
+
+                // 対象のファントムが名前付きの場合は処理しない
+                if (e.getCustomName() != null) continue;
+
+                // ファントムに20のダメージ
                 if (e instanceof LivingEntity) {
                     ((LivingEntity) e).damage(20);
                 }
