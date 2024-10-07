@@ -283,6 +283,12 @@ public final class VivaItems extends JavaPlugin {
         // 手に持っているアイテムを取得
         ItemStack i = player.getInventory().getItemInMainHand();
 
+        // 減らした結果０個になる場合の処理
+        if(i.getAmount()-value == 0){
+            i.setAmount(0);
+            return true;
+        }
+
         // 減らした後用のアイテムスタックを作成(アイテムが減らす数以上の時)
         if(i.getAmount() >= value){
             ItemStack after = new ItemStack(i.getType(),i.getAmount()-value);
